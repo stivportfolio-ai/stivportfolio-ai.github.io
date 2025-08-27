@@ -1,171 +1,423 @@
+/* =========================
+   ΒΑΣΙΚΑ / RESET / ΜΕΤΑΒΛΗΤΕΣ
+========================= */
+:root {
+  --header-h: 100px;      /* θα ενημερωθεί από JS */
+  --brand: #007bff;
+  --bg: #f4f4f4;
+  --text: #333;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+html { scroll-behavior: smooth; }
+
 body {
   font-family: Arial, sans-serif;
-
-  margin: 0; /* afairoume keno apo browser pou bai nei deafult */
-
-  padding: 0; 
-
   line-height: 1.6;
-
-  background-color: #f4f4f4;
-
-  color: #333;
-}
-html {
-  scroll-padding-top: 100px; /* προσαρμόζεται στο ύψος του header */
+  background-color: var(--bg);
+  color: var(--text);
+  overflow-x: hidden; /* όχι οριζόντια μπάρα */
 }
 
+/* =========================
+   HEADER / NAV
+========================= */
 header {
-  background-color: #222;
-  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: #222222a1;
+  color: #ffffffd2;
   padding: 20px;
   text-align: center;
-
-  position: sticky;   /* κάνει το header να κολλάει */
-  top: 0;             /* στην κορυφή της σελίδας */
-  z-index: 1000;      /* το κρατάει πάνω από όλα τα άλλα στοιχεία */
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 2px 5px rgba(0,0,0,.5);
 }
 
-header h1 {
-  margin: 0;
-
-  font-size: 2em;
-}
+header h1 { margin: 0; font-size: 2em; }
+nav { margin-top: 10px; }
 
 nav button {
   background-color: #444;
-  color: white;
+  color: #fff;
   border: none;
   padding: 10px 15px;
   margin: 5px;
   cursor: pointer;
   border-radius: 5px;
   font-size: 1em;
-
-  transition: all 0.3s ease; 
-  /* Κάνει ομαλή μετάβαση σε οποιαδήποτε αλλαγή (χρώμα, μέγεθος κτλ) */
+  transition: all .3s ease;
 }
-
-
 nav button:hover {
-  background-color: #666;   /* πιο ανοιχτό γκρι */
-  transform: scale(1.05);   /* μεγαλώνει λίγο (5%) */
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3); /* μικρή σκιά */
+  background-color: #666;
+  transform: scale(1.05);
+  box-shadow: 0 2px 6px rgba(0,0,0,.3);
 }
-
 nav button.active {
-  background-color: #007bff; /* έντονο μπλε */
+  background-color: var(--brand);
   color: #fff;
   font-weight: bold;
-  transform: scale(1.08); /* λίγο πιο μεγάλο */
-  box-shadow: 0 3px 8px rgba(0, 123, 255, 0.5); /* γαλάζια σκιά */
+  transform: scale(1.08);
+  box-shadow: 0 3px 8px rgba(0,123,255,.5);
 }
 
-section {
-  padding: 120px 20px;
-
-  max-width: 10000px;
-  margin: auto;
-
+/* =========================
+   BOOK-STYLE ΠΛΟΗΓΗΣΗ
+========================= */
+main#app {
+  height: calc(100vh - var(--header-h));
+  overflow: hidden;     /* δεν κάνουμε κάθετο scroll στο main */
+  position: relative;
+  z-index: 1;           /* πάνω από τα shapes */
 }
 
-section h2{
-  font-size: 1.8em;
-
-  color: #222;
-  margin-bottom: 20px;
+.pages {
+  display: flex;
+  height: 100%;
+  transform: translateX(0);
+  transition: transform 600ms cubic-bezier(.2,.8,.2,1);
+  will-change: transform;
+}
+.pages.is-tilting {
+  transition: transform 600ms cubic-bezier(.2,.8,.2,1), rotate 600ms ease;
+  rotate: 0.0001deg;
 }
 
-section p {
-  font-size:  1.1em;
+.page {
+  flex: 0 0 100%;
+  height: 100%;
+  overflow-y: auto;   /* αν μία σελίδα έχει πολύ περιεχόμενο */
+  padding: 48px 24px;
+  position: relative; /* για overlay */
+}
+
+/* Κάνουμε τα pages “διάφανα” με overlay, ώστε να περνάνε τα shapes */
+.page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.82); /* διάφανο λευκό */
+  backdrop-filter: blur(2px);            /* διακριτικό blur στα shapes */
+  z-index: 0;                            /* πίσω από το περιεχόμενο της σελίδας */
+}
+.page > * { position: relative; z-index: 1; } /* πραγματικό περιεχόμενο πάνω */
+
+/* Ειδικά backgrounds ανά σελίδα (χωρίς συμπαγές background πλέον) */
+.page#home    { /* transparent, χρησιμοποιεί το γενικό overlay */ }
+.page#about   { /* transparent */ }
+.page#contact { /* transparent */ }
+/* Center layout για το Contact */
+/* Κεντράρισμα ολόκληρης της σελίδας Contact */
+.page#contact {
+  display: flex;
+  align-items: center;             /* κάθετα στο κέντρο */
+  justify-content: center;         /* οριζόντια στο κέντρο */
+  gap: 16px;
+  padding: 0 24px;                 /* χωρίς μεγάλα top/bottom paddings */
+  min-height: calc(100vh - var(--header-h));
+}
+
+/* Η κάρτα επικοινωνίας */
+#contact .contact-card {
+  width: min(780px, 92vw);
+  background: rgba(255,255,255,0.9);
+  border-radius: 12px;
+  padding: 24px 28px;
+  box-shadow: 0 12px 28px rgba(0,0,0,.12);
+  backdrop-filter: blur(2px);
+  text-align: center;
+}
+
+/* Τίτλος */
+#contact .contact-card h2 {
+  margin: 0 0 10px 0;
+}
+
+/* Γραμμές στοιχείων */
+#contact .contact-card p {
+  margin: 10px 0;
   line-height: 1.8;
+  text-align: center;
+
 }
 
-#home {
-  background-color: #fff;
+/* Εικονίδια */
+#contact i {
+  margin: 0 6px;
+  color: var(--brand);
 }
 
-#about {
-  background-color: #e9ecef;
+/* Links */
+#contact .contact-card a {
+  color: #0a58ca;
+  text-decoration: none;
+}
+#contact .contact-card a:hover {
+  text-decoration: underline;
 }
 
-#projects {
+/* Copy button */
+#contact .copy-btn {
+  margin-left: 8px;
+  padding: 6px 10px;
+  font-size: .9rem;
+  border: none;
+  border-radius: 6px;
+  background: var(--brand);
+  color: #fff;
+  cursor: pointer;
+  transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+  box-shadow: 0 6px 16px rgba(0,123,255,.25);
+}
+#contact .copy-btn:hover {
+  transform: translateY(-1px);
+  background: #0062cc;
+}
+
+/* Copied! μήνυμα */
+#contact .copy-msg {
+  display: none;                 /* JS το κάνει inline */
+  margin-left: 10px;
+  color: #28a745;
+  font-weight: 600;
+}
+
+
+/* Home hero στο κέντρο + μεγαλύτερα γράμματα */
+.page#home {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 24px;
+}
+#home h2 { font-size: clamp(2.2rem, 4vw, 3rem); margin: 0 0 12px; }
+#home p  { font-size: clamp(1.1rem, 2vw, 1.4rem); max-width: 800px; color: #444; margin: 0; }
+
+/* Projects: background εικόνα κάτω από δικό του πιο σκούρο overlay */
+.page#projects{
+  position: relative;
   background: url('images/bg-code.jpg') no-repeat center center/cover;
   color: white;
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+  text-shadow: 1px 1px 3px rgba(0,0,0,.7);
+}
+/* override του γενικού λευκού overlay με πιο σκούρο για αντίθεση πάνω σε εικόνα */
+.page#projects::before{
+  background: rgba(0,0,0,0.28);
 }
 
-#contact {
-  background-color: #e9ecef;
-}
+/* Προαιρετικό wrapper για πλάτος κειμένου */
+.section-inner { max-width: 900px; margin: 0 auto; }
 
-/* Projects container */
+/* =========================
+   PROJECT CARDS
+========================= */
 .projects-container {
-  display: grid; 
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
-  gap: 20px; 
-  /* φτιάχνει grid με responsive κάρτες */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px,1fr));
+  gap: 20px;
 }
-
-/* Κάθε project card */
 .project-card {
-  background: white;
-  border-radius: 8px;
+  background: #fff;
+  border-radius: 10px;
   padding: 20px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 2px 10px rgba(0,0,0,.15);
+  transition: transform .3s, box-shadow .3s;
 }
-
-/* Hover effect */
-.project-card:hover {
-  transform: translateY(-5px); /* ανεβαίνει λίγο */
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3); /* πιο έντονη σκιά */
-}
-
-/* Τίτλος project */
+.project-card:hover { transform: translateY(-6px); box-shadow: 0 8px 20px rgba(0,0,0,.25); }
 .project-card h3 {
-  margin-top: 0;
-  color: #007bff;
-  font-size: 1.3em;
-  display: flex;
-  align-items: center;
-  gap: 8px; /* μικρό κενό ανάμεσα σε emoji και κείμενο */
+  margin: 0 0 8px 0;
+  color: var(--brand);
+  font-size: 1.2em;
+  display: flex; align-items: center; gap: 8px;
 }
-
-/* Κείμενο project */
-.project-card p {
-  font-size: 0.95em;
-  color: #555;
-  margin: 10px 0 15px;
-}
-
-/* Link (κουμπί) */
+.project-card p { font-size: .95em; color: #555; margin: 10px 0 16px; }
 .project-card a {
   display: inline-block;
   padding: 8px 12px;
-  background: #007bff;
-  color: white;
+  background: var(--brand);
+  color: #fff;
   text-decoration: none;
-  border-radius: 5px;
-  transition: background 0.3s;
+  border-radius: 6px;
+  transition: background .3s;
 }
+.project-card a:hover { background: #0056b3; }
 
-.project-card a:hover {
-  background: #0056b3;
-}
-
-.project-card h3::first-letter {
-  text-transform: uppercase; /* πάντα κεφαλαίο το πρώτο γράμμα */
-}
-
+/* =========================
+   FOOTER
+========================= */
 footer {
+  position: relative; /* ώστε να είναι πάνω από τα shapes */
+  z-index: 1;
   background-color: #222;
-  color: white;
+  color: #fff;
   text-align: center;
-  padding: 15px 0;
-  margin-top: 30px;
-  font-size: 0.9em;
+  padding: 16px 0;
+  font-size: .9em;
+}
+
+/* =========================
+   CONTACT ICONS
+========================= */
+#contact i { margin-right: 8px; color: var(--brand); }
+
+/* =========================
+   BACKGROUND SHAPES (fixed, πίσω από όλα)
+========================= */
+.background-shapes {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;              /* <-- ΟΧΙ -1 */
+  pointer-events: none;
+  overflow: hidden;
+}
+.shape{
+  position: absolute;
+  bottom: -140px;
+  border-radius: 50%;
+  /* φωτεινό κέντρο + ελαφριά σκιά στο περίγραμμα */
+  background:
+    radial-gradient(circle at 35% 35%,
+      rgba(255,255,255,.65) 0%,
+      rgba(255,255,255,.20) 40%,
+      rgba(0,0,0,.12) 41%,
+      rgba(0,0,0,0) 70%);
+  mix-blend-mode: multiply;                 /* να “γράφουν” πάνω στο λευκό overlay */
+  box-shadow: inset 0 8px 18px rgba(0, 0, 0, 0.678),
+              0 8px 20px rgba(0,0,0,.08);
+  animation: floatUp 18s linear infinite;
+  will-change: transform, opacity;
+}
+
+/* ελαφρύ πλαϊνό “λαντάρισμα” για να δείχνουν πιο ζωντανές */
+@keyframes floatUp{
+  0%   { transform: translateY(0) translateX(0)    scale(1);    opacity:.9; }
+  50%  { transform: translateY(-60vh) translateX(12px) scale(1.06); }
+  100% { transform: translateY(-120vh) translateX(-8px) scale(1); opacity:.9; }
+}
+@media (prefers-reduced-motion: reduce) { .shape { animation: none; } }
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 600px) {
+  header h1 { font-size: 1.6em; }
+  nav button { display: inline-block; margin: 6px 4px; padding: 8px 12px; }
+  .page { padding: 28px 16px; }
+  .section-inner { max-width: 92vw; }
 }
 
 
+/* About = κεντρική κάρτα */
+.page#about {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+  min-height: calc(100vh - var(--header-h));
+}
+
+/* Κάρτα */
+.about-card {
+  width: min(1000px, 94vw);
+  background: rgba(255,255,255,0.92);
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 14px 36px rgba(0,0,0,.14);
+  backdrop-filter: blur(2px);
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 28px;
+  align-items: center;
+  position: relative;
+  z-index: 1; /* πάνω από το overlay της σελίδας */
+}
+
+/* Avatar */
+.avatar {
+  width: 220px; height: 220px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  box-shadow: 0 10px 24px rgba(0,0,0,.18);
+  margin: 0 auto;
+}
+
+/* Fallback avatar (μονόγραμμα) αν δεν έχεις εικόνα ακόμη */
+.avatar-fallback {
+  width: 220px; height: 220px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 80px; font-weight: 800; color: #fff;
+  background: radial-gradient(120px 120px at 30% 30%, #3da4ff, #0056b3);
+  box-shadow: 0 10px 24px rgba(0,0,0,.18);
+  user-select: none;
+  margin: 0 auto;
+}
+
+/* Κείμενο */
+.about-right h2 {
+  margin: 0 0 10px;
+  font-size: clamp(1.8rem, 3vw, 2.2rem);
+}
+.about-right p {
+  margin: 0 0 14px;
+  line-height: 1.8;
+  color: #444;
+  max-width: 60ch;
+}
+
+/* Bullets */
+.bullets {
+  margin: 0 0 12px 0;
+  padding-left: 18px;
+  color: #444;
+}
+.bullets li { margin: 6px 0; }
+
+/* Skill pills */
+.skills { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 18px; }
+.pill {
+  padding: 6px 10px;
+  font-size: .9rem;
+  border-radius: 999px;
+  background: rgba(0,123,255,.12);
+  color: #0a58ca;
+  border: 1px solid rgba(0,123,255,.22);
+}
+
+/* CTA buttons */
+.about-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn-primary {
+  padding: 10px 14px; border: 0; border-radius: 10px;
+  background: var(--brand); color: #fff; cursor: pointer;
+  box-shadow: 0 10px 22px rgba(0,123,255,.28);
+  transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+}
+.btn-primary:hover { transform: translateY(-1px); background: #0062cc; }
+
+.btn-ghost {
+  padding: 10px 14px; border-radius: 10px; text-decoration: none;
+  border: 1px solid rgba(0,0,0,.12); color: #222; background: #fff;
+  box-shadow: 0 6px 16px rgba(0,0,0,.08);
+  transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+}
+.btn-ghost:hover { transform: translateY(-1px); }
+
+/* Responsive: από 900px και κάτω -> μία στήλη */
+@media (max-width: 900px) {
+  .about-card {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  .about-right p, .bullets { margin-left: auto; margin-right: auto; text-align: left; }
+}
