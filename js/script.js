@@ -140,3 +140,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.addEventListener('resize', setHeaderHeightVar);
+
+
+function toggleMenu() {
+  document.querySelector('nav').classList.toggle('active');
+}
+
